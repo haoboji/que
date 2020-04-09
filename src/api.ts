@@ -12,7 +12,6 @@ export const AUTH_PARAMS =
 export const TOKEN_PARAMS = "grant_type=refresh_token&client_id=app";
 
 export const getRefreshToken = async (username: string, password: string) => {
-  console.log(username, password);
   const response = await fetch(AUTH_URL, {
     body: `${AUTH_PARAMS}&username=${username}&password=${password}`,
     headers: {
