@@ -1,8 +1,12 @@
 import fetch from "node-fetch";
+import config from "./config.json";
+import { Status } from "./types";
 
 export const SERVER = "https://que.actronair.com.au/api/v0";
 export const AUTH_URL = `${SERVER}/client/user-devices`;
 export const TOKEN_URL = `${SERVER}/oauth/token`;
+export const STATUS_URL = `${SERVER}/client/ac-systems/status/latest`;
+
 export const AUTH_PARAMS =
   "deviceName=google&client=Android&deviceUniqueIdentifier=smarthome";
 export const TOKEN_PARAMS = "grant_type=refresh_token&client_id=app";
@@ -31,4 +35,13 @@ export const getAccessToken = async (refreshToken: string) => {
   const token = await response.json();
   console.log("token", token);
   return token;
+};
+
+export const getStatus = async (authorization: string): Promise<Status> => {
+  console.log("status url: ", `${STATUS_URL}?serial=${config.serial}`);
+  const response = await fetch(`${STATUS_URL}?serial=${config.serial}`, {
+    headers: { authorization },
+  });
+  const status = await response.json();
+  return status;
 };

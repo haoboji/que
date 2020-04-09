@@ -5,7 +5,6 @@ import morgan from "morgan";
 import { AddressInfo } from "net";
 import app from "./app";
 import * as Auth from "./auth";
-import * as Config from "./config";
 
 const expressApp = express();
 expressApp.use(cors());
@@ -16,11 +15,11 @@ expressApp.set("trust proxy", 1);
 
 expressApp.get("/login", Auth.loginPageHandler);
 expressApp.post("/login", Auth.loginHandler);
-expressApp.post("/auth", Auth.authHandler);
+expressApp.get("/auth", Auth.authHandler);
 expressApp.post("/token", Auth.tokenHandler);
 expressApp.post("/smarthome", app);
 
-const appPort = process.env.PORT || Config.expressPort;
+const appPort = process.env.PORT || 3000;
 
 const expressServer = expressApp.listen(appPort, async () => {
   const server = expressServer.address() as AddressInfo;

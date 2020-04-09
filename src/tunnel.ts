@@ -1,9 +1,8 @@
 import * as ngrok from "ngrok";
-import * as Config from "./config";
 
 (async () => {
   try {
-    const url = await ngrok.connect(Config.expressPort);
+    const url = await ngrok.connect(3000);
     console.log("");
     console.log("COPY & PASTE NGROK URL BELOW");
     console.log(url);
