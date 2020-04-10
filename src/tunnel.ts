@@ -22,8 +22,7 @@ import * as ngrok from "ngrok";
     console.log("Then set the Token URL to:");
     console.log("    " + url + "/faketoken");
     console.log("");
-
-    console.log("Finally press the 'TEST DRAFT' button");
+    console.warn(url.replace("https://", "").replace(".ngrok.io", ""));
   } catch (err) {
     console.error("Ngrok was unable to start");
     console.error(err);

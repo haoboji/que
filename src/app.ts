@@ -1,29 +1,21 @@
-import { smarthome, SmartHomeJwt } from "actions-on-google";
+import {
+  smarthome,
+  SmartHomeJwt,
+  SmartHomeV1ExecuteResponseCommands,
+} from "actions-on-google";
 import jwt from "./smart-home-key.json";
-import { getStatus } from "./api";
-import { modeQueToGoogle } from "./helper";
+import { getStatus, sendCommand } from "./api";
+import {
+  getDeviceStates,
+  getDevices,
+  convertCommandsGoogleToQue,
+} from "./helper";
 
-const app = smarthome({ jwt: jwt as SmartHomeJwt, debug: true });
+const app = smarthome({ jwt: jwt as SmartHomeJwt });
 
 app.onSync(async (body, headers) => {
   const status = await getStatus(headers.authorization as string);
-  const devices = status.lastKnownState.RemoteZoneInfo.map((z, i) => {
-    return {
-      id: i.toString(),
-      type: "action.devices.types.THERMOSTAT",
-      traits: ["action.devices.traits.TemperatureSetting"],
-      name: {
-        name: z.NV_Title,
-        defaultNames: [z.NV_Title],
-        nicknames: [z.NV_Title],
-      },
-      willReportState: true,
-      attributes: {
-        availableThermostatModes: "off,heat,cool,heatcool,fan-only",
-        thermostatTemperatureUnit: "C",
-      },
-    };
-  });
+  const devices = getDevices(status);
   return {
     requestId: body.requestId,
     payload: {
@@ -35,32 +27,38 @@ app.onSync(async (body, headers) => {
 
 app.onQuery(async (body, headers) => {
   const status = await getStatus(headers.authorization as string);
-  const {
-    RemoteZoneInfo,
-    MasterInfo,
-    UserAirconSettings,
-  } = status.lastKnownState;
-  const devices = RemoteZoneInfo.map((z, i) => {
-    return {
-      online: MasterInfo.CloudReachable,
-      thermostatMode: UserAirconSettings.EnabledZones[i]
-        ? modeQueToGoogle[UserAirconSettings.Mode]
-        : "off",
-      thermostatTemperatureSetpoint:
-        UserAirconSettings.Mode === "COOL"
-          ? z.TemperatureSetpoint_Cool_oC
-          : z.TemperatureSetpoint_Heat_oC,
-      thermostatTemperatureSetpointHigh: z.TemperatureSetpoint_Cool_oC,
-      thermostatTemperatureSetpointLow: z.TemperatureSetpoint_Heat_oC,
-      thermostatTemperatureAmbient: z.LiveTemp_oC,
-      thermostatHumidityAmbient: MasterInfo.LiveHumidity_pc,
-      status: "SUCCESS",
-    };
-  });
+  const devices = getDeviceStates(status);
   return {
     requestId: body.requestId,
     payload: {
       devices: { ...devices },
+    },
+  };
+});
+
+app.onExecute(async (body, headers) => {
+  const { requestId, inputs } = body;
+  const googleCommands = inputs.reduce(
+    (prev, curr) => [...prev, ...curr.payload.commands],
+    []
+  );
+  const queCommand = convertCommandsGoogleToQue(googleCommands);
+  await sendCommand(headers.authorization as string, queCommand);
+  const status = await getStatus(headers.authorization as string);
+  const devices = getDeviceStates(status);
+  const commands: SmartHomeV1ExecuteResponseCommands[] = devices.map((d, i) => {
+    return {
+      ids: [i.toString()],
+      status: "SUCCESS",
+      states: {
+        ...d,
+      },
+    };
+  });
+  return {
+    requestId,
+    payload: {
+      commands,
     },
   };
 });

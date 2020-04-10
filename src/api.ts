@@ -6,6 +6,7 @@ export const SERVER = "https://que.actronair.com.au/api/v0";
 export const AUTH_URL = `${SERVER}/client/user-devices`;
 export const TOKEN_URL = `${SERVER}/oauth/token`;
 export const STATUS_URL = `${SERVER}/client/ac-systems/status/latest`;
+export const CMD_URL = `${SERVER}/client/ac-systems/cmds/send`;
 
 export const AUTH_PARAMS =
   "deviceName=google&client=Android&deviceUniqueIdentifier=smarthome";
@@ -43,4 +44,20 @@ export const getStatus = async (authorization: string): Promise<Status> => {
   });
   const status = await response.json();
   return status;
+};
+
+export const sendCommand = async (
+  authorization: string,
+  command: {
+    [s: string]: string | boolean;
+  }
+) => {
+  const response = await fetch(`${CMD_URL}?serial=${config.serial}`, {
+    body: JSON.stringify({ command }),
+    headers: { authorization },
+    method: "POST",
+  });
+  console.log("CMD url: ", `${CMD_URL}?serial=${config.serial}`);
+  console.log("CMD request: ", JSON.stringify({ command }));
+  console.log("CMD response:", await response.json());
 };
