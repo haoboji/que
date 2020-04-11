@@ -23,6 +23,7 @@ module.exports = {
   rules: {
     "prettier/prettier": "error",
     "@typescript-eslint/explicit-function-return-type": 0,
+    "@typescript-eslint/camelcase": 0
   },
   ignorePatterns: ["dist/", "node_modules/"],
 };

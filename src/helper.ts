@@ -13,7 +13,9 @@ export const modeQueToGoogle: { [s: string]: string } = {
 };
 
 export const getDevices = (status: Status) => {
-  const devices = status.lastKnownState.RemoteZoneInfo.map((z, i) => {
+  const { NV_Limits, RemoteZoneInfo, AirconSystem } = status.lastKnownState;
+  const s = NV_Limits.UserSetpoint_oC;
+  const devices = RemoteZoneInfo.map((z, i) => {
     return {
       id: i.toString(),
       type: "action.devices.types.THERMOSTAT",
@@ -30,9 +32,15 @@ export const getDevices = (status: Status) => {
           ...Object.values(modeQueToGoogle),
         ].join(","),
         thermostatTemperatureUnit: "C",
+        thermostatTemperatureRange: {
+          minThresholdCelsius: s.setHeat_Max + s.VarianceBelowMasterHeat,
+          maxThresholdCelsius: s.setCool_Min + s.VarianceAboveMasterCool,
+        },
       },
       customData: {
-        serial: status.lastKnownState.AirconSystem.MasterSerial,
+        serial: AirconSystem.MasterSerial,
+        minCool: s.setCool_Min,
+        maxHeat: s.setHeat_Max,
       },
     };
   });
@@ -69,8 +77,8 @@ export const convertCommandGoogleToQue = (
   execution: SmartHomeV1ExecuteRequestExecution
 ): { [s: string]: string | boolean } => {
   const { command, params } = execution;
-  switch (command) {
-    case "action.devices.commands.ThermostatSetMode": {
+  switch (command.replace("action.devices.commands.", "")) {
+    case "ThermostatSetMode": {
       const queMode = Object.keys(modeQueToGoogle).find(
         (q) => modeQueToGoogle[q] === params.thermostatMode
       );
@@ -79,11 +87,30 @@ export const convertCommandGoogleToQue = (
           [`UserAirconSettings.EnabledZones[${parseInt(device.id)}]`]: true,
           "UserAirconSettings.Mode": queMode,
         };
-      } else {
-        return {
-          [`UserAirconSettings.EnabledZones[${parseInt(device.id)}]`]: false,
-        };
       }
+      return {
+        [`UserAirconSettings.EnabledZones[${parseInt(device.id)}]`]: false,
+      };
+    }
+    case "ThermostatTemperatureSetpoint": {
+      const target = params.thermostatTemperatureSetpoint;
+      const { minCool, maxHeat } = device.customData || {};
+      return {
+        [`RemoteZoneInfo[${parseInt(device.id)}].TemperatureSetpoint_Cool_oC`]:
+          target >= minCool ? params.thermostatTemperatureSetpoint : undefined,
+        [`RemoteZoneInfo[${parseInt(device.id)}].TemperatureSetpoint_Heat_oC`]:
+          target <= maxHeat ? params.thermostatTemperatureSetpoint : undefined,
+      };
+    }
+    case "ThermostatTemperatureSetRange": {
+      return {
+        [`RemoteZoneInfo[${parseInt(
+          device.id
+        )}].TemperatureSetpoint_Cool_oC`]: params.thermostatTemperatureSetpointHigh,
+        [`RemoteZoneInfo[${parseInt(
+          device.id
+        )}].TemperatureSetpoint_Heat_oC`]: params.thermostatTemperatureSetpointLow,
+      };
     }
     default:
       return {};

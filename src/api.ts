@@ -38,7 +38,7 @@ export const getAccessToken = async (refreshToken: string) => {
 };
 
 export const getStatus = async (authorization: string): Promise<Status> => {
-  console.log("status url: ", `${STATUS_URL}?serial=${config.serial}`);
+  console.log(`authorization: ${authorization}`);
   const response = await fetch(`${STATUS_URL}?serial=${config.serial}`, {
     headers: { authorization },
   });

@@ -42,19 +42,18 @@ app.onExecute(async (body, headers) => {
     (prev, curr) => [...prev, ...curr.payload.commands],
     []
   );
+  const ids = googleCommands.map((gc) => gc.devices.map((d) => d.id)).flat(1);
   const queCommand = convertCommandsGoogleToQue(googleCommands);
   await sendCommand(headers.authorization as string, queCommand);
   const status = await getStatus(headers.authorization as string);
   const devices = getDeviceStates(status);
-  const commands: SmartHomeV1ExecuteResponseCommands[] = devices.map((d, i) => {
-    return {
-      ids: [i.toString()],
-      status: "SUCCESS",
-      states: {
-        ...d,
-      },
-    };
-  });
+  const commands: SmartHomeV1ExecuteResponseCommands[] = ids.map((id) => ({
+    ids: [id],
+    status: "SUCCESS",
+    states: {
+      ...devices[parseInt(id)],
+    },
+  }));
   return {
     requestId,
     payload: {
