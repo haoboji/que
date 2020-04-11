@@ -4,29 +4,35 @@ import {
   SmartHomeV1ExecuteResponseCommands,
 } from "actions-on-google";
 import jwt from "./smart-home-key.json";
-import { getStatus, sendCommand } from "./api";
+import { getStatus, sendCommand, getAcSys } from "./api";
 import {
   getDeviceStates,
   getDevices,
   convertCommandsGoogleToQue,
+  getSerialOrThrow,
 } from "./helper";
 
 const app = smarthome({ jwt: jwt as SmartHomeJwt });
 
 app.onSync(async (body, headers) => {
-  const status = await getStatus(headers.authorization as string);
+  const ac = await getAcSys(headers.authorization as string);
+  const serial = ac._embedded["ac-system"]?.[0]?.serial;
+  console.log("serial: ", serial);
+  setTimeout(() => app.requestSync(serial), 24 * 3600 * 1000); // resync every day
+  const status = await getStatus(headers.authorization as string, serial);
   const devices = getDevices(status);
   return {
     requestId: body.requestId,
     payload: {
-      agentUserId: status.lastKnownState.AirconSystem.MasterSerial,
+      agentUserId: serial,
       devices,
     },
   };
 });
 
 app.onQuery(async (body, headers) => {
-  const status = await getStatus(headers.authorization as string);
+  const serial = getSerialOrThrow(body.inputs[0].payload.devices);
+  const status = await getStatus(headers.authorization as string, serial);
   const devices = getDeviceStates(status);
   return {
     requestId: body.requestId,
@@ -38,15 +44,13 @@ app.onQuery(async (body, headers) => {
 
 app.onExecute(async (body, headers) => {
   const { requestId, inputs } = body;
-  const googleCommands = inputs.reduce(
-    (prev, curr) => [...prev, ...curr.payload.commands],
-    []
-  );
-  const ids = googleCommands.map((gc) => gc.devices.map((d) => d.id)).flat(1);
+  const serial = getSerialOrThrow(inputs[0].payload.commands[0].devices);
+  const googleCommands = inputs.map((i) => i.payload.commands).flat(1);
   const queCommand = convertCommandsGoogleToQue(googleCommands);
-  await sendCommand(headers.authorization as string, queCommand);
-  const status = await getStatus(headers.authorization as string);
+  await sendCommand(headers.authorization as string, serial, queCommand);
+  const status = await getStatus(headers.authorization as string, serial);
   const devices = getDeviceStates(status);
+  const ids = googleCommands.map((gc) => gc.devices.map((d) => d.id)).flat(1);
   const commands: SmartHomeV1ExecuteResponseCommands[] = ids.map((id) => ({
     ids: [id],
     status: "SUCCESS",

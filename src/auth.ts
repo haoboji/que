@@ -5,13 +5,29 @@ import { RequestHandler } from "express";
 export const loginPageHandler: RequestHandler = (req, res) => {
   res.send(`
     <html>
-      <body>
+      <body style="">
         <form action="/login" method="post">
           <input type="hidden" name="responseurl" value="${req.query.responseurl}" />
-          <input name="username" />
-          <input name="password" />
-          <button type="submit" style="font-size:14pt">Link this service to Google</button>
+          <label for="username">QUE Email</label>
+          <input id="username" name="username" />
+          <label for="username">QUE Password</label>
+          <input name="password" type="password" />
+          <button type="submit">Link QUE to Google Home</button>
         </form>
+        <style>
+          body {
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+          }
+          form {
+            display: flex;
+            flex-direction: column;
+          }
+          input {
+            margin-bottom: 16px;
+          }
+        </style>
       </body>
     </html>
   `);

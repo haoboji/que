@@ -12,6 +12,14 @@ export const modeQueToGoogle: { [s: string]: string } = {
   FAN: "fan-only",
 };
 
+export const getSerialOrThrow = (devices: SmartHomeV1QueryRequestDevices[]) => {
+  const serial = devices[0].customData?.serial;
+  if (!serial) {
+    throw Error("No serial found in device customData");
+  }
+  return serial;
+};
+
 export const getDevices = (status: Status) => {
   const { NV_Limits, RemoteZoneInfo, AirconSystem } = status.lastKnownState;
   const s = NV_Limits.UserSetpoint_oC;
@@ -38,7 +46,7 @@ export const getDevices = (status: Status) => {
         },
       },
       customData: {
-        serial: AirconSystem.MasterSerial,
+        serial: AirconSystem.MasterSerial.toLowerCase(),
         minCool: s.setCool_Min,
         maxHeat: s.setHeat_Max,
       },

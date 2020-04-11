@@ -507,3 +507,42 @@ export interface UserAirconSettings {
   isFastHeating: boolean;
   isOn: boolean;
 }
+
+export interface ACSystem {
+  _links: ACSystemLinksClass;
+  _embedded: Embedded;
+}
+
+export interface Embedded {
+  "ac-system": ACSystemElement[];
+}
+
+export interface ACSystemElement {
+  type: string;
+  serial: string;
+  id: string;
+  issued: Date;
+  expires: Date;
+  description: string;
+  _links: ACSystemLinks;
+}
+
+export interface ACSystemLinks {
+  self: SelfClass;
+  commands: ACLatestEvents;
+  "ac-status": ACLatestEvents;
+  "ac-latest-events": ACLatestEvents;
+}
+
+export interface ACLatestEvents {
+  href: string;
+  title: string;
+}
+
+export interface SelfClass {
+  href: string;
+}
+
+export interface ACSystemLinksClass {
+  "ac-system": SelfClass;
+}

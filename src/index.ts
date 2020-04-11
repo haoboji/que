@@ -5,7 +5,6 @@ import morgan from "morgan";
 import { AddressInfo } from "net";
 import app from "./app";
 import * as Auth from "./auth";
-import config from "./config.json";
 
 const expressApp = express();
 expressApp.use(cors());
@@ -28,5 +27,3 @@ const expressServer = expressApp.listen(appPort, async () => {
 
   console.log(`Smart home server listening at ${address}:${port}`);
 });
-
-app.requestSync(config.serial);
