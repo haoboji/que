@@ -1,5 +1,5 @@
 import util from "util";
-import { getRefreshToken, getAccessToken } from "./api";
+import { registerDevice, getAccessToken } from "./api";
 import { RequestHandler } from "express";
 
 export const loginPageHandler: RequestHandler = (req, res) => {
@@ -37,10 +37,8 @@ export const loginHandler: RequestHandler = async (req, res) => {
   const responseurl = decodeURIComponent(req.body.responseurl);
   const username = req.body.username;
   const password = req.body.password;
-  const refreshToken = await getRefreshToken(username, password);
-  console.log("refreshToken: ", refreshToken);
-  const redirectUri = `${responseurl}&code=${refreshToken}`;
-  console.log(redirectUri);
+  const device = await registerDevice(username, password);
+  const redirectUri = `${responseurl}&code=${device.pairingToken}`;
   return res.redirect(redirectUri);
 };
 

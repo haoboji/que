@@ -546,3 +546,25 @@ export interface SelfClass {
 export interface ACSystemLinksClass {
   "ac-system": SelfClass;
 }
+
+export interface Device {
+  id: string;
+  deviceName: string;
+  pairingToken: string;
+  expires: Date;
+  _links: Links;
+}
+
+export interface Links {
+  self: Self;
+}
+
+export interface Self {
+  href: string;
+}
+
+export interface Token {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+}

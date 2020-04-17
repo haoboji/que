@@ -1,5 +1,5 @@
 import fetch from "node-fetch";
-import { Status, ACSystem } from "./types";
+import { Status, ACSystem, Device, Token } from "./types";
 
 export const SERVER = "https://que.actronair.com.au";
 export const AUTH_URL = `${SERVER}/api/v0/client/user-devices`;
@@ -17,22 +17,32 @@ export const getAcSys = async (authorization: string): Promise<ACSystem> => {
   return await response.json();
 };
 
-export const getRefreshToken = async (username: string, password: string) => {
+export const registerDevice = async (
+  username: string,
+  password: string
+): Promise<Device> => {
   const response = await fetch(AUTH_URL, {
     body: `${AUTH_PARAMS}&username=${username}&password=${password}`,
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
     method: "POST",
   });
-  const { pairingToken } = await response.json();
-  return pairingToken;
+  const device = await response.json();
+  console.log("Device: ", device);
+  return device;
 };
 
-export const getAccessToken = async (refreshToken: string) => {
+export const getAccessToken = async (refreshToken: string): Promise<Token> => {
   const response = await fetch(TOKEN_URL, {
     body: `${TOKEN_PARAMS}&refresh_token=${refreshToken}`,
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
     method: "POST",
   });
   const token = await response.json();
-  console.log("token", token);
+  console.log("Token: ", token);
   return token;
 };
 
@@ -44,6 +54,7 @@ export const getStatus = async (
     headers: { authorization },
   });
   const status = await response.json();
+  console.log("Status: ", status);
   return status;
 };
 

@@ -4,7 +4,12 @@ import cors from "cors";
 import morgan from "morgan";
 import { AddressInfo } from "net";
 import app from "./app";
-import * as Auth from "./auth";
+import {
+  loginPageHandler,
+  loginHandler,
+  authHandler,
+  tokenHandler,
+} from "./auth";
 
 const expressApp = express();
 expressApp.use(cors());
@@ -13,10 +18,10 @@ expressApp.use(bodyParser.json());
 expressApp.use(bodyParser.urlencoded({ extended: true }));
 expressApp.set("trust proxy", 1);
 
-expressApp.get("/login", Auth.loginPageHandler);
-expressApp.post("/login", Auth.loginHandler);
-expressApp.get("/auth", Auth.authHandler);
-expressApp.post("/token", Auth.tokenHandler);
+expressApp.get("/login", loginPageHandler);
+expressApp.post("/login", loginHandler);
+expressApp.get("/auth", authHandler);
+expressApp.post("/token", tokenHandler);
 expressApp.post("/smarthome", app);
 
 const appPort = process.env.PORT || 3000;
