@@ -14,7 +14,9 @@ export const TOKEN_PARAMS = "grant_type=refresh_token&client_id=app";
 
 export const getAcSys = async (authorization: string): Promise<ACSystem> => {
   const response = await fetch(AC_SYS_URL, { headers: { authorization } });
-  return await response.json();
+  const sys = await response.json();
+  console.log("System: ", JSON.stringify(sys));
+  return sys;
 };
 
 export const registerDevice = async (
@@ -29,7 +31,7 @@ export const registerDevice = async (
     method: "POST",
   });
   const device = await response.json();
-  console.log("Device: ", device);
+  console.log("Device: ", JSON.stringify(device));
   return device;
 };
 
@@ -42,7 +44,7 @@ export const getAccessToken = async (refreshToken: string): Promise<Token> => {
     method: "POST",
   });
   const token = await response.json();
-  console.log("Token: ", token);
+  console.log("Token: ", JSON.stringify(token));
   return token;
 };
 
@@ -54,7 +56,10 @@ export const getStatus = async (
     headers: { authorization },
   });
   const status = await response.json();
-  console.log("Status: ", status);
+  if (status.message) {
+    throw Error(status.message);
+  }
+  console.log("Status: ", JSON.stringify(status));
   return status;
 };
 
@@ -73,5 +78,5 @@ export const sendCommand = async (
   });
   console.log("CMD url: ", `${CMD_URL}?serial=${serial}`);
   console.log("CMD request: ", JSON.stringify({ command }));
-  console.log("CMD response:", await response.json());
+  console.log("CMD response:", JSON.stringify(await response.json()));
 };

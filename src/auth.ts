@@ -54,8 +54,6 @@ export const authHandler: RequestHandler = async (req, res) => {
 export const tokenHandler: RequestHandler = async (req, res) => {
   const grantType = req.query.grant_type || req.body.grant_type;
   const code = req.query.code || req.body.code;
-  console.log(`code: ${code}`);
-  console.log(`Grant type ${grantType}`);
   const accessToken = await getAccessToken(code);
 
   if (grantType === "authorization_code") {
