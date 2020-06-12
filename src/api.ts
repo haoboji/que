@@ -15,7 +15,6 @@ export const TOKEN_PARAMS = "grant_type=refresh_token&client_id=app";
 export const getAcSys = async (authorization: string): Promise<ACSystem> => {
   const response = await fetch(AC_SYS_URL, { headers: { authorization } });
   const sys = await response.json();
-  console.log("System: ", JSON.stringify(sys));
   return sys;
 };
 
@@ -31,7 +30,6 @@ export const registerDevice = async (
     method: "POST",
   });
   const device = await response.json();
-  console.log("Device: ", JSON.stringify(device));
   return device;
 };
 
@@ -44,7 +42,6 @@ export const getAccessToken = async (refreshToken: string): Promise<Token> => {
     method: "POST",
   });
   const token = await response.json();
-  console.log("Token: ", JSON.stringify(token));
   return token;
 };
 
@@ -59,7 +56,6 @@ export const getStatus = async (
   if (status.message) {
     throw Error(status.message);
   }
-  console.log("Status: ", JSON.stringify(status));
   return status;
 };
 

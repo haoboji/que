@@ -33,7 +33,7 @@ export const getDevices = (status: Status) => {
         defaultNames: [z.NV_Title],
         nicknames: [z.NV_Title],
       },
-      willReportState: true,
+      willReportState: false,
       attributes: {
         availableThermostatModes: [
           "off",

@@ -17,7 +17,6 @@ const app = smarthome({ jwt: jwt as SmartHomeJwt });
 app.onSync(async (body, headers) => {
   const ac = await getAcSys(headers.authorization as string);
   const serial = ac._embedded["ac-system"]?.[0]?.serial;
-  console.log("serial: ", serial);
   const status = await getStatus(headers.authorization as string, serial);
   const devices = getDevices(status);
   return {
