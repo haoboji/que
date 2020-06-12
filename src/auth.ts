@@ -35,8 +35,7 @@ export const loginPageHandler: RequestHandler = (req, res) => {
 
 export const loginHandler: RequestHandler = async (req, res) => {
   const responseurl = decodeURIComponent(req.body.responseurl);
-  const username = req.body.username;
-  const password = req.body.password;
+  const { username, password } = req.body;
   const device = await registerDevice(username, password);
   const redirectUri = `${responseurl}&code=${device.pairingToken}`;
   return res.redirect(redirectUri);
@@ -53,13 +52,23 @@ export const authHandler: RequestHandler = async (req, res) => {
 
 export const tokenHandler: RequestHandler = async (req, res) => {
   const grantType = req.query.grant_type || req.body.grant_type;
-  const code = req.query.code || req.body.code;
-  const accessToken = await getAccessToken(code);
-
-  if (grantType === "authorization_code") {
-    // eslint-disable-next-line @typescript-eslint/camelcase
-    res.status(200).json({ ...accessToken, refresh_token: code });
-  } else if (grantType === "refresh_token") {
-    res.status(200).json(accessToken);
+  switch (grantType) {
+    case "authorization_code": {
+      const code = req.query.code || req.body.code;
+      const accessToken = await getAccessToken(code);
+      // eslint-disable-next-line @typescript-eslint/camelcase
+      res.status(200).json({ ...accessToken, refresh_token: code });
+      break;
+    }
+    case "refresh_token": {
+      const refresh_token = req.query.refresh_token || req.body.refresh_token;
+      const accessToken = await getAccessToken(refresh_token);
+      res.status(200).json(accessToken);
+      break;
+    }
+    default: {
+      res.status(400).json({ error: "invalid_grant" });
+      break;
+    }
   }
 };
