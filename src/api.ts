@@ -1,5 +1,5 @@
 import fetch from "node-fetch";
-import { Status, ACSystem, Device, Token } from "./types";
+import { Status, ACSystem, Device, Token, CMDResponse } from "./types";
 
 export const SERVER = "https://que.actronair.com.au";
 export const AUTH_URL = `${SERVER}/api/v0/client/user-devices`;
@@ -53,9 +53,7 @@ export const getStatus = async (
     headers: { authorization },
   });
   const status = await response.json();
-  if (status.message) {
-    throw Error(status.message);
-  }
+  console.log("status response:", JSON.stringify(status));
   return status;
 };
 
@@ -65,14 +63,14 @@ export const sendCommand = async (
   command: {
     [s: string]: string | boolean;
   }
-) => {
-  console.log(`authorization: ${authorization}`);
+): Promise<CMDResponse> => {
   const response = await fetch(`${CMD_URL}?serial=${serial}`, {
     body: JSON.stringify({ command }),
     headers: { authorization },
     method: "POST",
   });
-  console.log("CMD url: ", `${CMD_URL}?serial=${serial}`);
-  console.log("CMD request: ", JSON.stringify({ command }));
-  console.log("CMD response:", JSON.stringify(await response.json()));
+  const cmdResponse = await response.json();
+  console.log("CMD request: ", JSON.stringify(command));
+  console.log("CMD response:", JSON.stringify(cmdResponse));
+  return cmdResponse;
 };

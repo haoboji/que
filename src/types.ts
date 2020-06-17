@@ -568,3 +568,10 @@ export interface Token {
   token_type: string;
   expires_in: number;
 }
+
+export interface CMDResponse {
+  correlationId: string;
+  type: "timeout" | "ack";
+  value: { [s: string]: string | number };
+  mwcResponseTime: string;
+}

@@ -5,7 +5,7 @@ import { RequestHandler } from "express";
 export const loginPageHandler: RequestHandler = (req, res) => {
   res.send(`
     <html>
-      <body style="">
+      <body>
         <form action="/login" method="post">
           <input type="hidden" name="responseurl" value="${req.query.responseurl}" />
           <label for="username">QUE Email</label>

@@ -1,7 +1,7 @@
 import {
   smarthome,
   SmartHomeJwt,
-  SmartHomeV1ExecuteResponseCommands,
+  SmartHomeV1ExecuteStatus,
 } from "actions-on-google";
 import jwt from "./smart-home-key.json";
 import { getStatus, sendCommand, getAcSys } from "./api";
@@ -45,21 +45,18 @@ app.onExecute(async (body, headers) => {
   const serial = getSerialOrThrow(inputs[0].payload.commands[0].devices);
   const googleCommands = inputs.map((i) => i.payload.commands).flat(1);
   const queCommand = convertCommandsGoogleToQue(googleCommands);
-  await sendCommand(headers.authorization as string, serial, queCommand);
-  const status = await getStatus(headers.authorization as string, serial);
-  const devices = getDeviceStates(status);
+  const response = await sendCommand(
+    headers.authorization as string,
+    serial,
+    queCommand
+  );
   const ids = googleCommands.map((gc) => gc.devices.map((d) => d.id)).flat(1);
-  const commands: SmartHomeV1ExecuteResponseCommands[] = ids.map((id) => ({
-    ids: [id],
-    status: "SUCCESS",
-    states: {
-      ...devices[parseInt(id)],
-    },
-  }));
+  const status: SmartHomeV1ExecuteStatus =
+    response.type === "ack" ? "SUCCESS" : "ERROR";
   return {
     requestId,
     payload: {
-      commands,
+      commands: [{ ids, status }],
     },
   };
 });
